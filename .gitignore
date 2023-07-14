@@ -1,0 +1,9 @@
+.vscode
+
+__pycache__
+.mypy_cache
+
+Include
+Lib
+Scripts
+pyvenv.cfg

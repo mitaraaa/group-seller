@@ -22,3 +22,4 @@ profile =
     User ID: <code>{ NUMBER($id, useGrouping: 0) }</code>
     Заказов сделано: <code>{ $orders_amount }</code>
     Сумма заказов: <code>{ $orders_sum }</code>
+choosing_group = Выберите группу:

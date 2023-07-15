@@ -41,7 +41,7 @@ def get_group_by_url(url: str) -> Group | None:
 
 def get_all_groups():
     with session:
-        stmt = select(Group)
+        stmt = select(Group.name)
         return session.execute(stmt).scalars().all()
 
 

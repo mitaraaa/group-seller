@@ -1,8 +1,15 @@
+import os
 from aiogram import Router, types
 from aiogram.filters.command import Command
 from emoji import emojize
 from api.steam import get_group_info
-from database import session, create_user, get_user, create_group
+from database import (
+    session,
+    create_user,
+    get_user,
+    create_group,
+    get_group_by_url,
+)
 
 from keyboards import LanguageAction, language_keyboard
 from locales import get_user_language, set_user_language
@@ -86,9 +93,14 @@ async def profile(message: types.Message):
 
 @handlers.message(Command("add_group"))
 async def add_group(message: types.Message):
+    if str(message.from_user.id) != os.getenv("ADMIN_ID"):
+        return
+
     url = message.text.split(" ")[-1]
     info = get_group_info(url)
-    group = create_group(info, 200)
+    create_group(info, 200)
+
+    group = get_group_by_url(info.url)
     await message.answer_photo(
         types.URLInputFile(group.image), caption=str(group)
     )

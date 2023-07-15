@@ -17,10 +17,10 @@ Base.metadata.create_all(bind=engine)
 session = Session(engine)
 
 
-def create_group(info: GroupInfo, price: int):
+def create_group(info: GroupInfo, price: float | str):
     with session:
         try:
-            group = Group(**(dict(vars(info).items())), price=price)
+            group = Group(**(dict(vars(info).items())), price=float(price))
             session.add(group)
             session.commit()
         except IntegrityError:
@@ -41,8 +41,20 @@ def get_group_by_url(url: str) -> Group | None:
 
 def get_all_groups():
     with session:
-        stmt = select(Group.name)
+        stmt = select(Group)
         return session.execute(stmt).scalars().all()
+
+
+def set_sold(url: str):
+    group = get_group_by_url(url)
+
+    if not group:
+        return
+
+    with session:
+        group.sold = True
+        session.add(group)
+        session.commit()
 
 
 def create_user(user: types.User):

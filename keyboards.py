@@ -4,6 +4,9 @@ from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from emoji import emojize
 
+from database.models import Group
+from fluent.runtime import FluentLocalization
+
 
 class Language(str, Enum):
     ru = "ru"
@@ -13,6 +16,14 @@ class Language(str, Enum):
 class LanguageAction(CallbackData, prefix="set_lang"):
     language: Language
     from_start: bool
+
+
+class GroupsAction(CallbackData, prefix="select_group"):
+    group_id: int
+
+
+class ContinueAction(CallbackData, prefix="continue"):
+    pass
 
 
 def language_keyboard(from_start: bool = False):
@@ -33,11 +44,22 @@ def language_keyboard(from_start: bool = False):
     return builder.as_markup()
 
 
-def group_keyboard(groups):
+def continue_keyboard(language: FluentLocalization):
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text=emojize(language.format_value("continue")),
+        callback_data=ContinueAction(),
+    )
+
+    return builder.as_markup()
+
+
+def group_keyboard(groups: list[Group]):
     builder = InlineKeyboardBuilder()
     for group in groups:
         builder.button(
-            text=group,
-            callback_data=group,
+            text=group.name,
+            callback_data=GroupsAction(group_id=group.id),
         )
+
     return builder.as_markup()

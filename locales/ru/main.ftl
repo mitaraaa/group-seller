@@ -23,3 +23,13 @@ profile =
     Заказов сделано: <code>{ $orders_amount }</code>
     Сумма заказов: <code>{ $orders_sum }</code>
 choosing_group = Выберите группу:
+group_info = 
+    "<a href="{ $link }">{ $name }</a>"
+
+    Название: <code>{ $name }</code>
+    Тэг: <code>{ $tag }</code>
+    URL: <code>{ $url }</code>
+
+    <i>Группа создана</i>
+    <i>{ $founded }</i>
+continue = :check_mark_button: Продолжить

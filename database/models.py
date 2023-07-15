@@ -46,7 +46,10 @@ class Group(Base):
     __tablename__ = "groups"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
     price: Mapped[float]
+    sold: Mapped[bool] = mapped_column(default=False)
+
     name: Mapped[Optional[str]]
     tag: Mapped[Optional[str]]
     url: Mapped[str] = mapped_column(unique=True)
@@ -62,6 +65,7 @@ class Group(Base):
             f"founded = {self.founded}), "
             f"image = {self.image}), "
             f"price = {self.price}), "
+            f"sold = {self.sold}), "
         )
 
 

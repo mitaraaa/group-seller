@@ -23,3 +23,13 @@ profile =
     Orders amount: <code>{ $orders_amount }</code>
     Orders total: <code>{ $orders_sum }</code>
 choosing_group = Choose a group:
+group_info = 
+    "<a href="{ $link }">{ $name }</a>"
+
+    Name: <code>{ $name }</code>
+    Tag: <code>{ $tag }</code>
+    URL: <code>{ $url }</code>
+
+    <i>Founded</i>
+    <i>{ $founded }</i>
+continue = :check_mark_button: Continue

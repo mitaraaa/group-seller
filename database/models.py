@@ -14,7 +14,7 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, unique=True)
     name: Mapped[Optional[str]]
     language: Mapped[Optional[str]]
 
@@ -45,18 +45,29 @@ class User(Base):
 class Group(Base):
     __tablename__ = "groups"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     price: Mapped[float]
     name: Mapped[Optional[str]]
     tag: Mapped[Optional[str]]
-    url: Mapped[str]
+    url: Mapped[str] = mapped_column(unique=True)
     founded: Mapped[datetime]
     image: Mapped[Optional[str]]
+
+    def __repr__(self) -> str:
+        return (
+            f"Group(id = {self.id}, "
+            f"name = {self.name}, "
+            f"tag = {self.tag}), "
+            f"url = {self.url}), "
+            f"founded = {self.founded}), "
+            f"image = {self.image}), "
+            f"price = {self.price}), "
+        )
 
 
 class Order(Base):
     __tablename__ = "orders"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int]
     group_id: Mapped[int]

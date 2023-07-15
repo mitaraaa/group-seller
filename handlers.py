@@ -9,9 +9,10 @@ from database import (
     get_user,
     create_group,
     get_group_by_url,
+    get_all_groups,
 )
 
-from keyboards import LanguageAction, language_keyboard
+from keyboards import LanguageAction, language_keyboard, group_keyboard
 from locales import get_user_language, set_user_language
 
 handlers = Router()
@@ -19,6 +20,7 @@ handlers = Router()
 
 @handlers.message(Command("start", "language"))
 async def start(message: types.Message) -> None:
+    # TODO: create user only when he presses "start" button,othersise the user creates again when he presses "language" button
     create_user(message.from_user)
 
     await message.answer(
@@ -89,6 +91,14 @@ async def profile(message: types.Message):
         ),
         parse_mode="HTML",
     )
+
+
+@handlers.message(Command("groups"))
+async def groups(message: types.Message):
+    language = get_user_language(message.from_user.id)
+
+    await message.answer(text=language.format_value("choosing_group"), 
+                         reply_markup=group_keyboard(get_all_groups()))
 
 
 @handlers.message(Command("add_group"))

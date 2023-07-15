@@ -4,6 +4,7 @@ from .db import (
     get_user,
     create_group,
     get_group_by_id,
+    get_all_groups,
     get_group_by_url,
 )
 
@@ -12,6 +13,7 @@ __all__ = [
     "create_user",
     "get_user",
     "create_group",
+    "get_all_groups",
     "get_group_by_id",
     "get_group_by_url",
     "models",

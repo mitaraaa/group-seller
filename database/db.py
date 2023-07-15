@@ -39,11 +39,20 @@ def get_group_by_url(url: str) -> Group | None:
         return session.scalar(stmt)
 
 
+def get_all_groups():
+    with session:
+        stmt = select(Group)
+        return session.execute(stmt).scalars().all()
+
+
 def create_user(user: types.User):
     with session:
-        user = User(id=user.id, name=user.first_name or user.username)
-        session.add(user)
-        session.commit()
+        try:
+            user = User(id=user.id, name=user.first_name or user.username)
+            session.add(user)
+            session.commit()
+        except IntegrityError:
+            logging.warn("Tried adding user that already exists")
 
 
 def get_user(user_id: int) -> User | None:

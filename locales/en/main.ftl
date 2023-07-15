@@ -17,3 +17,8 @@ instruction =
     <tg-spoiler>@worker</tg-spoiler>
 
 language_set = Picked language: :United_States: English
+profile =
+    Name: <code>{ $name }</code>
+    User ID: <code>{ NUMBER($id, useGrouping: 0) }</code>
+    Orders amount: <code>{ $orders_amount }</code>
+    Orders total: <code>{ $orders_sum }</code>

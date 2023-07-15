@@ -17,3 +17,8 @@ instruction =
     <tg-spoiler>@worker</tg-spoiler>
 
 language_set = Выбран язык: :Russia: Русский
+profile =
+    Имя: <code>{ $name }</code>
+    User ID: <code>{ NUMBER($id, useGrouping: 0) }</code>
+    Заказов сделано: <code>{ $orders_amount }</code>
+    Сумма заказов: <code>{ $orders_sum }</code>

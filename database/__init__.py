@@ -1,3 +1,3 @@
-from .db import session
+from .db import session, create_user, get_user
 
-__all__ = ["session", "models"]
+__all__ = ["session", "create_user", "get_user", "models"]

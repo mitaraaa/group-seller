@@ -1,8 +1,12 @@
 import dataclasses
 from datetime import datetime
+import warnings
 
 import requests
 from bs4 import BeautifulSoup
+
+
+warnings.filterwarnings("ignore", category=UserWarning, module="bs4")
 
 
 @dataclasses.dataclass
@@ -38,6 +42,6 @@ def get_group_info(url: str) -> GroupInfo:
     tag, founded = parse_group_tag_and_date(group_id)
     name = soup.find("groupname").text
     url = soup.find("groupurl").text
-    image = soup.find("avataricon").text
+    image = soup.find("avatarfull").text
 
     return GroupInfo(url=url, name=name, tag=tag, founded=founded, image=image)

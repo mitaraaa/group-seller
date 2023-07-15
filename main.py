@@ -3,6 +3,7 @@ import os
 
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters.command import Command
+from emoji import emojize
 from fluent.runtime import FluentLocalization, FluentResourceLoader
 from sqlalchemy import select
 
@@ -20,9 +21,9 @@ ru = FluentLocalization(["ru"], ["main.ftl"], loader)
 
 @router.message(Command("start", "language"))
 async def start(message: types.Message) -> None:
-    await message.reply(
+    await message.answer(
         "Выберите язык / Select language",
-        reply_markup=language_keyboard(),
+        reply_markup=language_keyboard(from_start=message.text == "/start"),
     )
 
 
@@ -56,20 +57,27 @@ def get_user_language(user_id: int) -> FluentLocalization | None:
 async def set_language(
     callback: types.CallbackQuery, callback_data: LanguageAction
 ):
-    set_user_language(
+    language = set_user_language(
         callback.from_user.id,
         callback_data.language,
         callback.from_user.first_name,
     )
 
+    await callback.message.edit_text(
+        emojize(language.format_value("language_set")),
+    )
 
-@router.message(Command("info"))
-async def info(message: types.Message):
+    if callback_data.from_start:
+        await callback.message.answer(
+            language.format_value("instruction"),
+            parse_mode="HTML",
+            disable_web_page_preview=True,
+        )
+
+
+@router.message(Command("help"))
+async def help(message: types.Message):
     language = get_user_language(message.from_user.id)
-
-    if not language:
-        await start(message)
-        language = get_user_language(message.from_user.id)
 
     await message.answer(
         language.format_value("instruction"),

@@ -12,17 +12,22 @@ class Language(str, Enum):
 
 class LanguageAction(CallbackData, prefix="set_lang"):
     language: Language
+    from_start: bool
 
 
-def language_keyboard():
+def language_keyboard(from_start: bool = False):
     builder = InlineKeyboardBuilder()
     builder.button(
         text=emojize(":Russia: RU"),
-        callback_data=LanguageAction(language=Language.ru),
+        callback_data=LanguageAction(
+            language=Language.ru, from_start=from_start
+        ),
     )
     builder.button(
         text=emojize(":United_States: EN"),
-        callback_data=LanguageAction(language=Language.en),
+        callback_data=LanguageAction(
+            language=Language.en, from_start=from_start
+        ),
     )
 
     return builder.as_markup()

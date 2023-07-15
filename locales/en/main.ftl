@@ -15,3 +15,5 @@ instruction =
     <pre>4. After payment, you will get full access to the account that owns the group. To get account information, send me your order number here:
     </pre>
     <tg-spoiler>@worker</tg-spoiler>
+
+language_set = Picked language: :United_States: English

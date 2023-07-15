@@ -11,6 +11,7 @@ class GroupInfo:
     name: str
     founded: datetime
     tag: str = None
+    image: str = None
 
 
 def parse_group_tag_and_date(group_id: int | str) -> tuple[str, datetime]:
@@ -37,10 +38,6 @@ def get_group_info(url: str) -> GroupInfo:
     tag, founded = parse_group_tag_and_date(group_id)
     name = soup.find("groupname").text
     url = soup.find("groupurl").text
+    image = soup.find("avataricon").text
 
-    return GroupInfo(
-        url=url,
-        name=name,
-        tag=tag,
-        founded=founded,
-    )
+    return GroupInfo(url=url, name=name, tag=tag, founded=founded, image=image)

@@ -51,6 +51,7 @@ class Group(Base):
     tag: Mapped[Optional[str]]
     url: Mapped[str]
     founded: Mapped[datetime]
+    image: Mapped[Optional[str]]
 
 
 class Order(Base):

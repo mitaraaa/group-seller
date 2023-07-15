@@ -68,8 +68,13 @@ async def set_language(
     )
 
     if callback_data.from_start:
-        await callback.message.answer(
-            language.format_value("instruction"),
+        image = types.URLInputFile(
+            "https://res.cloudinary.com/dhsnr66jg"
+            "/image/upload/v1689409862/help_steam_groups.jpg"
+        )
+        await callback.message.answer_photo(
+            image,
+            caption=language.format_value("instruction"),
             parse_mode="HTML",
             disable_web_page_preview=True,
         )
@@ -79,8 +84,16 @@ async def set_language(
 async def help(message: types.Message):
     language = get_user_language(message.from_user.id)
 
-    await message.answer(
-        language.format_value("instruction"),
+    if not language:
+        return await start(message)
+
+    image = types.URLInputFile(
+        "https://res.cloudinary.com/dhsnr66jg"
+        "/image/upload/v1689409862/help_steam_groups.jpg"
+    )
+    await message.answer_photo(
+        image,
+        caption=language.format_value("instruction"),
         parse_mode="HTML",
         disable_web_page_preview=True,
     )

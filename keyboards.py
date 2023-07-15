@@ -37,7 +37,7 @@ def group_keyboard(groups):
     builder = InlineKeyboardBuilder()
     for group in groups:
         builder.button(
-            text=group.name,
-            callback_data=group.id,
+            text=group,
+            callback_data=group,
         )
     return builder.as_markup()

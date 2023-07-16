@@ -33,3 +33,4 @@ group_info =
     <i>Founded</i>
     <i>{ $founded }</i>
 continue = :check_mark_button: Continue
+back = :BACK_arrow: Back

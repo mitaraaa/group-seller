@@ -1,25 +1,30 @@
 import os
+
 from aiogram import Router, types
 from aiogram.filters.command import Command
+from aiogram.fsm.context import FSMContext
 from emoji import emojize
+
 from api.steam import get_group_info
 from database import (
-    session,
-    create_user,
-    get_user,
     create_group,
-    get_group_by_url,
+    create_user,
     get_all_groups,
+    get_group_by_url,
+    get_user,
+    session,
 )
 from database.db import get_group_by_id
-
+from fsm import GroupStates
 from keyboards import (
+    BackAction,
     ContinueAction,
     GroupsAction,
     LanguageAction,
     continue_keyboard,
-    language_keyboard,
     group_keyboard,
+    groups_keyboard,
+    language_keyboard,
 )
 from locales import get_user_language, set_user_language
 
@@ -51,23 +56,12 @@ async def set_language(
     )
 
     if callback_data.from_start:
-        image = types.URLInputFile(
-            "https://res.cloudinary.com/dhsnr66jg"
-            "/image/upload/v1689409862/help_steam_groups.jpg"
-        )
-        await callback.message.answer_photo(
-            image,
-            caption=language.format_value("instruction"),
-            reply_markup=continue_keyboard(language),
-            parse_mode="HTML",
-            disable_web_page_preview=True,
-        )
+        await send_help(callback)
 
 
-@handlers.callback_query(GroupsAction.filter())
-async def group(callback: types.CallbackQuery, callback_data: GroupsAction):
+async def send_group_message(callback: types.CallbackQuery, group_id: int):
     language = get_user_language(callback.from_user.id)
-    group = get_group_by_id(callback_data.group_id)
+    group = get_group_by_id(group_id)
 
     await callback.message.answer_photo(
         types.URLInputFile(group.image),
@@ -82,38 +76,82 @@ async def group(callback: types.CallbackQuery, callback_data: GroupsAction):
             },
         ),
         parse_mode="HTML",
-    )
-    await callback.answer()
-
-
-@handlers.callback_query(ContinueAction.filter())
-async def continue_to_groups(callback: types.CallbackQuery):
-    language = get_user_language(callback.from_user.id)
-
-    await callback.message.answer(
-        text=language.format_value("choosing_group"),
-        reply_markup=group_keyboard(get_all_groups()),
+        reply_markup=group_keyboard(language, group_id),
     )
 
 
-@handlers.message(Command("help"))
-async def help(message: types.Message):
-    language = get_user_language(message.from_user.id)
-
-    if not language:
-        return await start(message)
-
+async def send_help(context: types.CallbackQuery | types.Message):
     image = types.URLInputFile(
         "https://res.cloudinary.com/dhsnr66jg"
         "/image/upload/v1689409862/help_steam_groups.jpg"
     )
-    await message.answer_photo(
+
+    language = get_user_language(context.from_user.id)
+
+    if (not language) and isinstance(context, types.Message):
+        return await start(context)
+
+    continue_button = (
+        continue_keyboard(language)
+        if isinstance(context, types.CallbackQuery)
+        else None
+    )
+
+    context = (
+        context if isinstance(context, types.Message) else context.message
+    )
+
+    await context.answer_photo(
         image,
         caption=language.format_value("instruction"),
-        reply_markup=continue_keyboard(language),
+        reply_markup=continue_button,
         parse_mode="HTML",
         disable_web_page_preview=True,
     )
+
+
+async def send_groups_message(context: types.CallbackQuery | types.Message):
+    language = get_user_language(context.from_user.id)
+
+    context = (
+        context if isinstance(context, types.Message) else context.message
+    )
+
+    await context.answer(
+        text=language.format_value("choosing_group"),
+        reply_markup=groups_keyboard(get_all_groups()),
+    )
+
+
+@handlers.callback_query(GroupsAction.filter())
+async def group(
+    callback: types.CallbackQuery,
+    callback_data: GroupsAction,
+    state: FSMContext,
+):
+    await send_group_message(callback, callback_data.group_id)
+
+    await state.set_state(GroupStates.group)
+
+
+@handlers.callback_query(ContinueAction.filter())
+async def continue_to_groups(callback: types.CallbackQuery, state: FSMContext):
+    await send_groups_message(callback)
+    await state.set_state(GroupStates.groups)
+
+
+@handlers.callback_query(BackAction.filter())
+async def back(callback: types.CallbackQuery, callback_data: BackAction):
+    state = getattr(GroupStates, callback_data.action)
+    if state == GroupStates.group:
+        await send_group_message(callback, callback_data.group_id)
+    elif state == GroupStates.groups:
+        await send_groups_message(callback)
+
+
+@handlers.message(Command("help"))
+async def help(message: types.Message):
+    await send_help(message)
 
 
 @handlers.message(Command("profile"))
@@ -136,13 +174,9 @@ async def profile(message: types.Message):
 
 
 @handlers.message(Command("groups"))
-async def groups(message: types.Message):
-    language = get_user_language(message.from_user.id)
-
-    await message.answer(
-        text=language.format_value("choosing_group"),
-        reply_markup=group_keyboard(get_all_groups()),
-    )
+async def groups(message: types.Message, state: FSMContext):
+    await send_groups_message(message)
+    await state.set_state(GroupStates.groups)
 
 
 @handlers.message(Command("add_group"))
@@ -156,5 +190,6 @@ async def add_group(message: types.Message):
 
     group = get_group_by_url(info.url)
     await message.answer_photo(
-        types.URLInputFile(group.image), caption=str(group)
+        types.URLInputFile(group.image),
+        caption=str(group),
     )

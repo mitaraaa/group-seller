@@ -33,3 +33,4 @@ group_info =
     <i>Группа создана</i>
     <i>{ $founded }</i>
 continue = :check_mark_button: Продолжить
+back = :BACK_arrow: Назад

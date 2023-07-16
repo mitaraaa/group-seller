@@ -26,6 +26,11 @@ class ContinueAction(CallbackData, prefix="continue"):
     pass
 
 
+class BackAction(CallbackData, prefix="back"):
+    action: str
+    group_id: int
+
+
 def language_keyboard(from_start: bool = False):
     builder = InlineKeyboardBuilder()
     builder.button(
@@ -54,12 +59,22 @@ def continue_keyboard(language: FluentLocalization):
     return builder.as_markup()
 
 
-def group_keyboard(groups: list[Group]):
+def groups_keyboard(groups: list[Group]):
     builder = InlineKeyboardBuilder()
     for group in groups:
         builder.button(
             text=group.name,
             callback_data=GroupsAction(group_id=group.id),
         )
+
+    return builder.as_markup()
+
+
+def group_keyboard(language: FluentLocalization, group_id: int, price=None):
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text=emojize(language.format_value("back")),
+        callback_data=BackAction(action="groups", group_id=group_id),
+    )
 
     return builder.as_markup()

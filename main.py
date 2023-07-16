@@ -3,6 +3,7 @@ import os
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
 from handlers import handlers
 
 
@@ -12,7 +13,7 @@ async def main():
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     )
 
-    dp = Dispatcher()
+    dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(handlers)
 
     bot = Bot(token=os.getenv("BOT_TOKEN", ""))

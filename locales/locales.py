@@ -5,7 +5,7 @@ from keyboards import Language
 
 loader = FluentResourceLoader("locales/{locale}")
 en = FluentLocalization(["en"], ["main.ftl"], loader)
-ru = FluentLocalization(["ru"], ["main.ftl"], loader)
+ru = FluentLocalization(["ru", "en"], ["main.ftl"], loader)
 
 
 def set_user_language(user_id: int, language: Language) -> FluentLocalization:

@@ -88,8 +88,16 @@ async def send_help(context: types.CallbackQuery | types.Message):
     )
 
 
-async def send_groups_message(context: types.CallbackQuery | types.Message):
+async def send_groups_message(
+    context: types.CallbackQuery | types.Message, from_continue: bool = False
+):
     language = get_user_language(context.from_user.id)
+
+    if from_continue:
+        if isinstance(context, types.Message):
+            await context.delete()
+        else:
+            await context.message.delete()
 
     context = (
         context if isinstance(context, types.Message) else context.message

@@ -3,7 +3,6 @@ import os
 from aiogram import Router, types
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
-from emoji import emojize
 
 from api.steam import get_group_info
 from database import (
@@ -13,17 +12,10 @@ from database import (
     get_user,
     session,
 )
-
 from fsm import GroupStates
-from keyboards import (
-    BackAction,
-    ContinueAction,
-    GroupsAction,
-    LanguageAction,
-    language_keyboard,
-)
-from locales import get_user_language, set_user_language
-from messages import send_group_message, send_groups_message, send_help
+from keyboards import language_keyboard
+from locales import get_user_language
+from messages import send_groups_message, send_help
 
 handlers = Router()
 
@@ -37,49 +29,6 @@ async def start(message: types.Message) -> None:
         "Выберите язык / Select language",
         reply_markup=language_keyboard(from_start=message.text == "/start"),
     )
-
-
-@handlers.callback_query(LanguageAction.filter())
-async def set_language(
-    callback: types.CallbackQuery, callback_data: LanguageAction
-):
-    language = set_user_language(
-        callback.from_user.id,
-        callback_data.language,
-    )
-
-    await callback.message.edit_text(
-        emojize(language.format_value("language_set")),
-    )
-
-    if callback_data.from_start:
-        await send_help(callback)
-
-
-@handlers.callback_query(GroupsAction.filter())
-async def group(
-    callback: types.CallbackQuery,
-    callback_data: GroupsAction,
-    state: FSMContext,
-):
-    await send_group_message(callback, callback_data.group_id)
-
-    await state.set_state(GroupStates.group)
-
-
-@handlers.callback_query(ContinueAction.filter())
-async def continue_to_groups(callback: types.CallbackQuery, state: FSMContext):
-    await send_groups_message(callback)
-    await state.set_state(GroupStates.groups)
-
-
-@handlers.callback_query(BackAction.filter())
-async def back(callback: types.CallbackQuery, callback_data: BackAction):
-    state = getattr(GroupStates, callback_data.action)
-    if state == GroupStates.group:
-        await send_group_message(callback, callback_data.group_id)
-    elif state == GroupStates.groups:
-        await send_groups_message(callback)
 
 
 @handlers.message(Command("help"))

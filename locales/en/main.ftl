@@ -34,3 +34,11 @@ group_info =
     <i>{ $founded }</i>
 continue = :check_mark_button: Continue
 back = :BACK_arrow: Back
+payment_option_btc = Bitcoin (BTC) - <code>{ $price }</code>
+payment_option_eth = Ethereum (ETH) - <code>{ $price }</code>
+payment_option_usdt = Tether (USDT) - <code>{ $price }</code>
+payment_option_ltc = Litecoin (LTC) - <code>{ $price }</code>
+payment_option_button_btc = Bitcoin (BTC)
+payment_option_button_eth = Ethereum (ETH)
+payment_option_button_usdt = Tether (USDT)
+payment_option_button_ltc = Litecoin (LTC)

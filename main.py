@@ -5,6 +5,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from handlers import handlers
+from callbacks import callbacks
 
 
 async def main():
@@ -15,6 +16,7 @@ async def main():
 
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(handlers)
+    dp.include_router(callbacks)
 
     bot = Bot(token=os.getenv("BOT_TOKEN", ""))
     print("Started polling")

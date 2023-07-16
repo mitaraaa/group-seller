@@ -1,4 +1,5 @@
 from aiogram import types
+from api.exchange import convert, convert_many
 from database import get_group_by_id, get_all_groups
 from keyboards import (
     continue_keyboard,
@@ -11,6 +12,33 @@ from locales import get_user_language
 async def send_group_message(callback: types.CallbackQuery, group_id: int):
     language = get_user_language(callback.from_user.id)
     group = get_group_by_id(group_id)
+
+    prices = convert_many(price=group.price)
+    price = (
+        f"{convert(group.price, 'RUB'):.2f} RUB"
+        if "ru" in language.locales
+        else f"{group.price:.2f} USD"
+    )
+
+    text = []
+    if "ru" in language.locales:
+        rub = prices["RUB"]
+        text.append(
+            language.format_value(
+                "payment_option_rub", {"price": f"{rub:.2f} RUB"}
+            )
+        )
+
+    for currency, p in prices.items():
+        if currency == "RUB":
+            continue
+
+        text.append(
+            language.format_value(
+                f"payment_option_{currency.lower()}",
+                {"price": f"{p} {currency} ({price})"},
+            )
+        )
 
     await callback.message.answer_photo(
         types.URLInputFile(group.image),
@@ -25,7 +53,11 @@ async def send_group_message(callback: types.CallbackQuery, group_id: int):
             },
         ),
         parse_mode="HTML",
-        reply_markup=group_keyboard(language, group_id),
+    )
+    await callback.message.answer(
+        "\n".join(text),
+        parse_mode="HTML",
+        reply_markup=group_keyboard(language, group_id, prices),
     )
 
 

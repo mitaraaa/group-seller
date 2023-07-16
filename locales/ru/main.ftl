@@ -34,3 +34,5 @@ group_info =
     <i>{ $founded }</i>
 continue = :check_mark_button: Продолжить
 back = :BACK_arrow: Назад
+payment_option_rub = Перевод на карту - <code>{ $price }</code>
+payment_option_button_rub = Перевод на карту

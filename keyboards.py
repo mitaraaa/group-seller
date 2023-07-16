@@ -1,5 +1,6 @@
 from enum import Enum
 
+from aiogram.types import InlineKeyboardButton
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from emoji import emojize
@@ -20,6 +21,11 @@ class LanguageAction(CallbackData, prefix="set_lang"):
 
 class GroupsAction(CallbackData, prefix="select_group"):
     group_id: int
+
+
+class GroupAction(CallbackData, prefix="select_payment"):
+    method: str
+    price: float
 
 
 class ContinueAction(CallbackData, prefix="continue"):
@@ -70,11 +76,47 @@ def groups_keyboard(groups: list[Group]):
     return builder.as_markup()
 
 
-def group_keyboard(language: FluentLocalization, group_id: int, price=None):
+def group_keyboard(
+    language: FluentLocalization, group_id: int, prices: dict[str, float]
+):
     builder = InlineKeyboardBuilder()
-    builder.button(
-        text=emojize(language.format_value("back")),
-        callback_data=BackAction(action="groups", group_id=group_id),
+
+    if "ru" in language.locales:
+        builder.row(
+            InlineKeyboardButton(
+                text=language.format_value("payment_option_button_rub"),
+                callback_data=GroupAction(
+                    method="RUB", price=prices["RUB"]
+                ).pack(),
+            )
+        )
+
+    buttons = []
+    for currency, p in prices.items():
+        if currency == "RUB":
+            continue
+
+        buttons.append(
+            InlineKeyboardButton(
+                text=language.format_value(
+                    f"payment_option_button_{currency.lower()}"
+                ),
+                callback_data=GroupAction(method=currency, price=p).pack(),
+            )
+        )
+    builder.row(*buttons, width=2)
+
+    builder.row(
+        InlineKeyboardButton(
+            text=emojize(language.format_value("back")),
+            callback_data=BackAction(
+                action="groups", group_id=group_id
+            ).pack(),
+        )
     )
 
     return builder.as_markup()
+
+
+def payment_keyboard(language: FluentLocalization, group_id: int):
+    pass

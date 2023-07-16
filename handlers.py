@@ -71,6 +71,12 @@ async def add_group(message: types.Message):
     if str(message.from_user.id) != os.getenv("ADMIN_ID"):
         return
 
+    if len(message.text.split(" ")) != 3:
+        await message.reply(
+            "You need to provide correct Steam group link and price (in USD)"
+        )
+        return
+
     url, price = message.text.split(" ")[-2:]
     info = get_group_info(url)
     create_group(info, price)

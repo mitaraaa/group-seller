@@ -58,7 +58,7 @@ async def order(
 
 @callbacks.callback_query(ContinueAction.filter())
 async def continue_to_groups(callback: types.CallbackQuery, state: FSMContext):
-    await send_groups_message(callback)
+    await send_groups_message(callback, from_continue=True)
 
     await state.set_state(GroupStates.groups)
     await callback.answer()

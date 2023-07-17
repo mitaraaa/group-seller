@@ -2,7 +2,7 @@ import os
 import requests
 
 
-def create_pay_oder(asset: str, amount: int) -> tuple[str, str, int]:
+def create_pay_order(asset: str, amount: int) -> tuple[str, str, int]:
     url = "https://pay.crypt.bot/api/createInvoice"
     token = os.getenv("CRYPTO_PAY_TOKEN")
     headers = {"Crypto-Pay-API-Token": token}

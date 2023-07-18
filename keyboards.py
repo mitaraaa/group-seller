@@ -135,7 +135,7 @@ def order_keyboard(
                 InlineKeyboardButton(
                     text=emojize(language.format_value("back")),
                     callback_data=BackAction(
-                        action="groups", group_id=group_id
+                        action="group", group_id=group_id
                     ).pack(),
                 ),
                 InlineKeyboardButton(

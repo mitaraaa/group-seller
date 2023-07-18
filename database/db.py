@@ -41,8 +41,8 @@ def get_group_by_url(url: str) -> Group | None:
 
 def get_all_groups():
     with session:
-        stmt = select(Group)
-        return session.execute(stmt).scalars().all()
+        stmt = select(Group).where(Group.sold == False)
+        return session.scalars(stmt).all()
 
 
 def set_sold(group_id: int):

@@ -115,11 +115,14 @@ async def send_groups_message(
     context = (
         context if isinstance(context, types.Message) else context.message
     )
-
-    await context.answer(
-        text=language.format_value("choosing_group"),
-        reply_markup=groups_keyboard(get_all_groups()),
-    )
+    keyboard = groups_keyboard(get_all_groups())
+    if len(keyboard.inline_keyboard) == 0:
+        await context.answer(text=language.format_value("empty_list_of_group"))
+    else:
+        await context.answer(
+            text=language.format_value("choosing_group"),
+            reply_markup=(keyboard),
+        )
 
 
 async def send_order_message(
@@ -178,13 +181,25 @@ async def check_payment(
     callback: types.CallbackQuery,
     invoice_id: int,
     group_id: int,
+    group_name: str,
+    order_id: int,
     state: FSMContext,
 ):
+    language = get_user_language(callback.from_user.id)
+
     while not check_status(invoice_id):
         time.sleep(5)
 
     set_sold(group_id)
-    await callback.message.answer("OK")
-
+    await callback.message.edit_text(
+        language.format_value(
+            "order_success",
+            {
+                "name": group_name,
+                "order_id": order_id,
+            }
+            ),
+        parse_mode="HTML",
+    )
     await state.clear()
     await callback.answer()

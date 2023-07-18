@@ -23,6 +23,7 @@ profile =
     Orders amount: <code>{ $orders_amount }</code>
     Orders total: <code>{ $orders_sum }</code>
 choosing_group = Choose a group:
+empty_list_of_group = There are currently no groups for sale.
 group_info = 
     "<a href="{ $link }">{ $name }</a>"
 
@@ -46,7 +47,7 @@ order =
     ➖➖➖➖➖➖➖➖➖➖➖➖
     ⚜️ Group: <code>{ $name }</code>
     💵 Price: <code>{ $price }</code>
-    📦 Order: <code>{ $order_id }</code>
+    📦 Order: <code>#{ $order_id }</code>
     💲 Payment method: <code>{ $payment_option }</code>
     ➖➖➖➖➖➖➖➖➖➖➖➖
     For payment follow the link
@@ -54,3 +55,11 @@ order =
     🕜 Deadline: <code>{ $time_until }</code>
     ➖➖➖➖➖➖➖➖➖➖➖➖
 proceed_button = Proceed to checkout
+order_success = 
+    ➖➖➖➖➖➖➖➖➖➖➖➖
+    🎉 Congratulations, you have bought a group!
+    ⚜️ Group: <code>{ $name }</code>
+    ➖➖➖➖➖➖➖➖➖➖➖➖
+    ✉️ Please write <tg-spoiler>@worker</tg-spoiler> your order number
+    📦 Order: <code>#{ $order_id }</code>
+    ➖➖➖➖➖➖➖➖➖➖➖➖

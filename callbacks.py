@@ -62,7 +62,8 @@ async def order(
     callback_data: GroupAction,
     state: FSMContext,
 ):
-    await send_order_message(callback, callback_data, state)
+    await state.set_state(GroupStates.order)
+    await send_order_message(callback, callback_data)
 
 
 @callbacks.callback_query(ContinueAction.filter())
@@ -80,5 +81,6 @@ async def back(callback: types.CallbackQuery, callback_data: BackAction):
         await send_group_message(callback, callback_data.group_id)
     elif state == GroupStates.groups:
         await send_groups_message(callback)
-
+    elif state == GroupStates.order:
+        await send_order_message(callback, callback_data, state)
     await callback.answer()

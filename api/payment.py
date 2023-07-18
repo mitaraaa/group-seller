@@ -20,7 +20,6 @@ def check_status(invoice_id: int) -> bool:
     response = requests.get(
         url, headers=headers, data={"invoice_id": invoice_id}
     )
-    print(response.json())
     for invoice in response.json()["result"]["items"]:
         if int(invoice["invoice_id"]) == invoice_id:
             return invoice["status"] == "paid"
@@ -44,8 +43,6 @@ def create_invoice(
             "allow_anonymous": False,
         },
     )
-
-    print(response.json())
 
     data = response.json()["result"]
     return Invoice(

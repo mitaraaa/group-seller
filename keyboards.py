@@ -73,12 +73,15 @@ def continue_keyboard(language: FluentLocalization):
 
 def groups_keyboard(groups: list[Group]):
     builder = InlineKeyboardBuilder()
+    buttons = []
     for group in groups:
-        builder.button(
-            text=group.name,
-            callback_data=GroupsAction(group_id=group.id),
+        buttons.append(
+            InlineKeyboardButton(
+                text=str(group.name),
+                callback_data=GroupsAction(group_id=group.id).pack(),
+            )
         )
-
+    builder.row(*buttons, width=1)
     return builder.as_markup()
 
 
@@ -135,7 +138,7 @@ def order_keyboard(
                 InlineKeyboardButton(
                     text=emojize(language.format_value("back")),
                     callback_data=BackAction(
-                        action="group", group_id=group_id
+                        action="order", group_id=group_id
                     ).pack(),
                 ),
                 InlineKeyboardButton(

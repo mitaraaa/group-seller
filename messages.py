@@ -172,9 +172,8 @@ async def send_order_message(
             language, callback_data.group_id, invoice.id, invoice.pay_url
         ),
     )
-
     await state.set_state(GroupStates.order)
-    await check_payment(callback, invoice.id, group.id, state)
+    await check_payment(callback, invoice.id, group.id, group.name, order_id, state)
 
 
 async def check_payment(

@@ -3,7 +3,7 @@ import requests
 
 def get_exchange_rate(
     currency: str = "USD",
-    currencys_to: list[str] = ["BTC", "ETH", "LTC", "USDT", "RUB"],
+    currencys_to: list[str] = ["BTC", "ETH", "TON", "USDT", "RUB"],
 ) -> dict[str, float]:
     exchange_rate: dict[str, float] = {}
     response = requests.get(
@@ -20,7 +20,7 @@ def get_exchange_rate(
 def convert_many(
     price: float,
     currency: str = "USD",
-    currencys_to: list[str] = ["BTC", "ETH", "LTC", "USDT", "RUB"],
+    currencys_to: list[str] = ["BTC", "ETH", "TON", "USDT", "RUB"],
 ) -> dict[str, float]:
     rates: dict[str, float] = get_exchange_rate(
         currency=currency,

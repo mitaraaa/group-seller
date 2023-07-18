@@ -37,8 +37,20 @@ back = :BACK_arrow: Back
 payment_option_btc = Bitcoin (BTC) - <code>{ $price }</code>
 payment_option_eth = Ethereum (ETH) - <code>{ $price }</code>
 payment_option_usdt = Tether (USDT) - <code>{ $price }</code>
-payment_option_ltc = Litecoin (LTC) - <code>{ $price }</code>
+payment_option_ton = Toncoin (TON) - <code>{ $price }</code>
 payment_option_button_btc = Bitcoin (BTC)
 payment_option_button_eth = Ethereum (ETH)
 payment_option_button_usdt = Tether (USDT)
-payment_option_button_ltc = Litecoin (LTC)
+payment_option_button_ton = Toncoin (TON)
+order = 
+    ➖➖➖➖➖➖➖➖➖➖➖➖
+    ⚜️ Group: <code>{ $name }</code>
+    💵 Price: <code>{ $price }</code>
+    📦 Order: <code>{ $order_id }</code>
+    💲 Payment method: <code>{ $payment_option }</code>
+    ➖➖➖➖➖➖➖➖➖➖➖➖
+    For payment follow the link
+    ⏰ Time remaining: <code>{ $time_remaining } minutes</code>
+    🕜 Deadline: <code>{ $time_until }</code>
+    ➖➖➖➖➖➖➖➖➖➖➖➖
+proceed_button = Proceed to checkout

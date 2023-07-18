@@ -1,23 +1,55 @@
+from datetime import datetime
 import os
 import requests
+import dataclasses
+
+token = os.getenv("CRYPTO_PAY_TOKEN")
+headers = {"Crypto-Pay-API-Token": token}
 
 
-def create_pay_order(asset: str, amount: int) -> tuple[str, str, int]:
-    url = "https://pay.crypt.bot/api/createInvoice"
-    token = os.getenv("CRYPTO_PAY_TOKEN")
-    headers = {"Crypto-Pay-API-Token": token}
-
-    response = requests.post(url, headers=headers, data={"asset": asset, "amount": amount})
-
-    data = response.json()
-    return data["result"]["url_pay"], data["result"]["time_pay"], data["result"]["invoice_id"]
+@dataclasses.dataclass
+class Invoice:
+    id: int
+    pay_url: str
+    time_pay: datetime
 
 
-def check_pay_order(id: int) -> bool:
-    url = "https://pay.crypt.bot/api/getInvoice"
-    token = os.getenv("CRYPTO_PAY_TOKEN")
-    headers = {"Crypto-Pay-API-Token": token}
+def check_status(invoice_id: int) -> bool:
+    url = "https://testnet-pay.crypt.bot/api/getInvoices"
 
-    response = requests.get(url, headers=headers, data={"invoice_id": id})
+    response = requests.get(
+        url, headers=headers, data={"invoice_id": invoice_id}
+    )
+    print(response.json())
+    for invoice in response.json()["result"]["items"]:
+        if int(invoice["invoice_id"]) == invoice_id:
+            return invoice["status"] == "paid"
 
-    return 1 if response.json()["result"]["status"] == "paid" else 0
+    return False
+
+
+def create_invoice(
+    asset: str, amount: float, expiration_date: datetime, group_id: str
+) -> Invoice:
+    url = "https://testnet-pay.crypt.bot/api/createInvoice"
+
+    response = requests.post(
+        url,
+        headers=headers,
+        data={
+            "asset": asset,
+            "amount": amount,
+            "expiration_date": expiration_date,
+            "allow_comments": False,
+            "allow_anonymous": False,
+        },
+    )
+
+    print(response.json())
+
+    data = response.json()["result"]
+    return Invoice(
+        data["invoice_id"],
+        data["pay_url"],
+        datetime.fromisoformat(data["created_at"]),
+    )

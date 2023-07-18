@@ -75,3 +75,7 @@ class Order(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int]
     group_id: Mapped[int]
+
+    method: Mapped[str]
+    price: Mapped[float]
+    date: Mapped[datetime] = mapped_column(default=datetime.utcnow())

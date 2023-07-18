@@ -1,10 +1,23 @@
+from datetime import datetime, timedelta
+import time
 from aiogram import types
+from aiogram.fsm.context import FSMContext
 from api.exchange import convert, convert_many
-from database import get_group_by_id, get_all_groups
+from api.payment import check_status, create_invoice
+from database import (
+    get_group_by_id,
+    get_all_groups,
+    create_order,
+    get_order,
+    set_sold,
+)
+from fsm import GroupStates
 from keyboards import (
+    GroupAction,
     continue_keyboard,
     group_keyboard,
     groups_keyboard,
+    order_keyboard,
 )
 from locales import get_user_language
 
@@ -107,3 +120,71 @@ async def send_groups_message(
         text=language.format_value("choosing_group"),
         reply_markup=groups_keyboard(get_all_groups()),
     )
+
+
+async def send_order_message(
+    callback: types.CallbackQuery,
+    callback_data: GroupAction,
+    state: FSMContext,
+):
+    language = get_user_language(callback.from_user.id)
+
+    order_id = create_order(
+        callback.from_user.id,
+        callback_data.group_id,
+        callback_data.method,
+        callback_data.price,
+    )
+    group = get_group_by_id(callback_data.group_id)
+    order = get_order(order_id)
+
+    datetime_until = order.date + timedelta(minutes=15)
+    time_until = datetime_until.time()
+
+    invoice = create_invoice(
+        callback_data.method,
+        callback_data.price,
+        (datetime_until - datetime(1970, 1, 1)).total_seconds(),
+        group.id,
+    )
+
+    await callback.message.edit_text(
+        language.format_value(
+            "order",
+            {
+                "name": group.name,
+                "price": f"{callback_data.price} {callback_data.method}",
+                "order_id": order_id,
+                "payment_option": language.format_value(
+                    f"payment_option_button_{callback_data.method.lower()}"
+                ),
+                "time_remaining": 15,
+                "time_until": f"{(time_until.hour + 3) % 24:02}"
+                ":"
+                f"{time_until.second:02}",  # tz hack
+            },
+        ),
+        parse_mode="HTML",
+        reply_markup=order_keyboard(
+            language, callback_data.group_id, invoice.id, invoice.pay_url
+        ),
+    )
+
+    await state.set_state(GroupStates.order)
+    await check_payment(callback, invoice.id, group.id, state)
+
+
+async def check_payment(
+    callback: types.CallbackQuery,
+    invoice_id: int,
+    group_id: int,
+    state: FSMContext,
+):
+    while not check_status(invoice_id):
+        time.sleep(5)
+
+    set_sold(group_id)
+    await callback.message.answer("OK")
+
+    await state.clear()
+    await callback.answer()

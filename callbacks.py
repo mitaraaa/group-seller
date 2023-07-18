@@ -1,6 +1,8 @@
+import time
 from aiogram import Router, types
 from aiogram.fsm.context import FSMContext
 from emoji import emojize
+from api.payment import check_status
 
 from fsm import GroupStates
 from keyboards import (
@@ -9,9 +11,16 @@ from keyboards import (
     GroupAction,
     GroupsAction,
     LanguageAction,
+    OrderAction,
 )
 from locales import set_user_language
-from messages import send_group_message, send_groups_message, send_help
+from messages import (
+    send_group_message,
+    send_groups_message,
+    send_help,
+    send_order_message,
+)
+from database import set_sold
 
 callbacks = Router()
 
@@ -53,7 +62,7 @@ async def order(
     callback_data: GroupAction,
     state: FSMContext,
 ):
-    await callback.answer()
+    await send_order_message(callback, callback_data, state)
 
 
 @callbacks.callback_query(ContinueAction.filter())

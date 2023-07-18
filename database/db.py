@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from api.steam import GroupInfo
 
-from .models import Base, Group, User
+from .models import Base, Group, Order, User
 
 sqlite_file_path = os.getenv("DATABASE_PATH")
 engine = create_engine(f"sqlite:///{sqlite_file_path}")
@@ -45,8 +45,8 @@ def get_all_groups():
         return session.execute(stmt).scalars().all()
 
 
-def set_sold(url: str):
-    group = get_group_by_url(url)
+def set_sold(group_id: int):
+    group = get_group_by_id(group_id)
 
     if not group:
         return
@@ -70,4 +70,24 @@ def create_user(user: types.User):
 def get_user(user_id: int) -> User | None:
     with session:
         stmt = select(User).where(User.id == user_id)
+        return session.scalar(stmt)
+
+
+def create_order(
+    user_id: int, group_id: int, method: str, price: float
+) -> None:
+    with session:
+        order = Order(
+            user_id=user_id, group_id=group_id, method=method, price=price
+        )
+        session.add(order)
+        session.flush()
+        order_id = order.id
+        session.commit()
+        return order_id
+
+
+def get_order(order_id: int) -> Order | None:
+    with session:
+        stmt = select(Order).where(Order.id == order_id)
         return session.scalar(stmt)

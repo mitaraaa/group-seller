@@ -29,18 +29,12 @@ class GroupAction(CallbackData, prefix="select_payment"):
     price: float
 
 
-class OrderAction(CallbackData, prefix="payment"):
-    group_id: int
-    invoice_id: int
-
-
 class ContinueAction(CallbackData, prefix="continue"):
     pass
 
 
 class BackAction(CallbackData, prefix="back"):
-    action: str
-    group_id: int
+    pass
 
 
 def language_keyboard(from_start: bool = False):
@@ -120,26 +114,20 @@ def group_keyboard(
     builder.row(
         InlineKeyboardButton(
             text=emojize(language.format_value("back")),
-            callback_data=BackAction(
-                action="groups", group_id=group_id
-            ).pack(),
+            callback_data=BackAction().pack(),
         )
     )
 
     return builder.as_markup()
 
 
-def order_keyboard(
-    language: FluentLocalization, group_id: int, invoice_id: int, url_pay: str
-):
+def order_keyboard(language: FluentLocalization, group_id: int, url_pay: str):
     builder = InlineKeyboardBuilder(
         [
             [
                 InlineKeyboardButton(
                     text=emojize(language.format_value("back")),
-                    callback_data=BackAction(
-                        action="order", group_id=group_id
-                    ).pack(),
+                    callback_data=BackAction().pack(),
                 ),
                 InlineKeyboardButton(
                     text=emojize(language.format_value("proceed_button")),

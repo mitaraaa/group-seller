@@ -52,7 +52,7 @@ order =
     ➖➖➖➖➖➖➖➖➖➖➖➖
     For payment follow the link
     ⏰ Time remaining: <code>{ $time_remaining } minutes</code>
-    🕜 Deadline: <code>{ $time_until }</code>
+    🕜 Deadline: <code>{ $time_until }</code> (+3 UTC)
     ➖➖➖➖➖➖➖➖➖➖➖➖
 proceed_button = Proceed to checkout
 order_success = 
@@ -63,3 +63,4 @@ order_success =
     ✉️ Please write <tg-spoiler>@worker</tg-spoiler> your order number
     📦 Order: <code>#{ $order_id }</code>
     ➖➖➖➖➖➖➖➖➖➖➖➖
+order_expired = ❌ You did not pay for the order within the specified time.

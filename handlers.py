@@ -2,7 +2,6 @@ import os
 
 from aiogram import Router, types
 from aiogram.filters.command import Command
-from aiogram.fsm.context import FSMContext
 
 from api.steam import get_group_info
 from database import (
@@ -12,7 +11,6 @@ from database import (
     get_user,
     session,
 )
-from fsm import GroupStates
 from keyboards import language_keyboard
 from locales import get_user_language
 from messages import send_groups_message, send_help
@@ -56,14 +54,12 @@ async def profile(message: types.Message):
                 "orders_sum": user.orders_sum(session),
             },
         ),
-        parse_mode="HTML",
     )
 
 
 @handlers.message(Command("groups"))
-async def groups(message: types.Message, state: FSMContext):
+async def groups(message: types.Message):
     await send_groups_message(message)
-    await state.set_state(GroupStates.groups)
 
 
 @handlers.message(Command("add_group"))

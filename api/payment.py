@@ -14,7 +14,7 @@ class Invoice:
     time_pay: datetime
 
 
-def check_status(invoice_id: int) -> bool:
+def check_status(invoice_id: int) -> str:
     url = "https://testnet-pay.crypt.bot/api/getInvoices"
 
     response = requests.get(
@@ -22,14 +22,11 @@ def check_status(invoice_id: int) -> bool:
     )
     for invoice in response.json()["result"]["items"]:
         if int(invoice["invoice_id"]) == invoice_id:
-            return invoice["status"] == "paid"
+            print(invoice)
+            return invoice["status"]
 
-    return False
 
-
-def create_invoice(
-    asset: str, amount: float, expiration_date: datetime, group_id: str
-) -> Invoice:
+def create_invoice(asset: str, amount: float, expiration_date: str) -> Invoice:
     url = "https://testnet-pay.crypt.bot/api/createInvoice"
 
     response = requests.post(
@@ -45,6 +42,7 @@ def create_invoice(
     )
 
     data = response.json()["result"]
+    print(data)
     return Invoice(
         data["invoice_id"],
         data["pay_url"],

@@ -1,17 +1,12 @@
-import time
 from aiogram import Router, types
-from aiogram.fsm.context import FSMContext
 from emoji import emojize
-from api.payment import check_status
 
-from fsm import GroupStates
 from keyboards import (
     BackAction,
     ContinueAction,
     GroupAction,
     GroupsAction,
     LanguageAction,
-    OrderAction,
 )
 from locales import set_user_language
 from messages import (
@@ -20,7 +15,6 @@ from messages import (
     send_help,
     send_order_message,
 )
-from database import set_sold
 
 callbacks = Router()
 
@@ -48,11 +42,10 @@ async def set_language(
 async def group(
     callback: types.CallbackQuery,
     callback_data: GroupsAction,
-    state: FSMContext,
 ):
+    await callback.message.delete()
     await send_group_message(callback, callback_data.group_id)
 
-    await state.set_state(GroupStates.group)
     await callback.answer()
 
 
@@ -60,28 +53,20 @@ async def group(
 async def order(
     callback: types.CallbackQuery,
     callback_data: GroupAction,
-    state: FSMContext,
 ):
-    await send_order_message(callback, callback_data, state)
-    await state.set_state(GroupStates.order)
+    await send_order_message(callback, callback_data)
     await callback.answer()
 
 
 @callbacks.callback_query(ContinueAction.filter())
-async def continue_to_groups(callback: types.CallbackQuery, state: FSMContext):
+async def continue_to_groups(callback: types.CallbackQuery):
     await send_groups_message(callback, from_continue=True)
 
-    await state.set_state(GroupStates.groups)
     await callback.answer()
 
 
 @callbacks.callback_query(BackAction.filter())
-async def back(callback: types.CallbackQuery, callback_data: BackAction):
-    state = getattr(GroupStates, callback_data.action)
-    if state == GroupStates.group:
-        await send_group_message(callback, callback_data.group_id)
-    elif state == GroupStates.groups:
-        await send_groups_message(callback)
-    elif state == GroupStates.order:
-        await send_order_message(callback, callback_data, state)
+async def back(callback: types.CallbackQuery):
+    await callback.message.delete()
+    await send_groups_message(callback)
     await callback.answer()

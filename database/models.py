@@ -15,7 +15,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, unique=True)
-    name: Mapped[Optional[str]]
+    username: Mapped[Optional[str]]
     language: Mapped[Optional[str]]
 
     def orders_amount(self, session: Session) -> int:

@@ -5,6 +5,7 @@ from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from emoji import emojize
 
+from database import get_user_orders, get_group_by_id
 from database.models import Group
 from fluent.runtime import FluentLocalization
 
@@ -23,6 +24,10 @@ class GroupsAction(CallbackData, prefix="select_group"):
     group_id: int
 
 
+class GroupViewAction(CallbackData, prefix="view_group"):
+    group_id: int
+
+
 class GroupAction(CallbackData, prefix="select_payment"):
     group_id: int
     method: str
@@ -34,7 +39,8 @@ class ContinueAction(CallbackData, prefix="continue"):
 
 
 class BackAction(CallbackData, prefix="back"):
-    pass
+    action: str
+    order_id: int
 
 
 def language_keyboard(from_start: bool = False):
@@ -114,20 +120,22 @@ def group_keyboard(
     builder.row(
         InlineKeyboardButton(
             text=emojize(language.format_value("back")),
-            callback_data=BackAction().pack(),
+            callback_data=BackAction(action="", order_id=-1).pack(),
         )
     )
 
     return builder.as_markup()
 
 
-def order_keyboard(language: FluentLocalization, group_id: int, url_pay: str):
+def order_keyboard(language: FluentLocalization, order_id: int, url_pay: str):
     builder = InlineKeyboardBuilder(
         [
             [
                 InlineKeyboardButton(
                     text=emojize(language.format_value("back")),
-                    callback_data=BackAction().pack(),
+                    callback_data=BackAction(
+                        action="remove_order", order_id=order_id
+                    ).pack(),
                 ),
                 InlineKeyboardButton(
                     text=emojize(language.format_value("proceed_button")),
@@ -136,5 +144,28 @@ def order_keyboard(language: FluentLocalization, group_id: int, url_pay: str):
             ]
         ]
     )
+
+    return builder.as_markup()
+
+
+def orders_keyboard(user_id: int):
+    builder = InlineKeyboardBuilder()
+    orders = get_user_orders(user_id)
+
+    buttons = []
+    for order in orders:
+        group = get_group_by_id(order.group_id)
+
+        if not group.sold:
+            continue
+
+        buttons.append(
+            InlineKeyboardButton(
+                text=group.name,
+                callback_data=GroupViewAction(group_id=group.id).pack(),
+            )
+        )
+
+    builder.row(*buttons, width=1)
 
     return builder.as_markup()

@@ -9,6 +9,9 @@ from .db import (
     get_group_by_url,
     create_order,
     get_order,
+    remove_order,
+    get_user_by_username,
+    get_user_orders,
 )
 
 __all__ = [
@@ -23,4 +26,7 @@ __all__ = [
     "models",
     "create_order",
     "get_order",
+    "remove_order",
+    "get_user_by_username",
+    "get_user_orders",
 ]

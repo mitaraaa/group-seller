@@ -33,6 +33,12 @@ def get_group_by_id(id: int) -> Group | None:
         return session.scalar(stmt)
 
 
+def get_user_by_username(username: str):
+    with session:
+        stmt = select(User).where(User.username == username)
+        return session.scalar(stmt)
+
+
 def get_group_by_url(url: str) -> Group | None:
     with session:
         stmt = select(Group).where(Group.url == url)
@@ -60,7 +66,7 @@ def set_sold(group_id: int):
 def create_user(user: types.User):
     with session:
         try:
-            user = User(id=user.id, name=user.first_name or user.username)
+            user = User(id=user.id, username=user.username)
             session.add(user)
             session.commit()
         except IntegrityError:
@@ -91,3 +97,18 @@ def get_order(order_id: int) -> Order | None:
     with session:
         stmt = select(Order).where(Order.id == order_id)
         return session.scalar(stmt)
+
+
+def get_user_orders(user_id: int) -> list[Order]:
+    with session:
+        stmt = select(Order).where(Order.user_id == user_id)
+        return session.scalars(stmt).all()
+
+
+def remove_order(order_id: int):
+    with session:
+        stmt = select(Order).where(Order.id == order_id)
+        order = session.scalar(stmt)
+        session.flush()
+        session.delete(order)
+        session.commit()

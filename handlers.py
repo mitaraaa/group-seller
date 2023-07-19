@@ -1,3 +1,4 @@
+from io import BytesIO
 import os
 
 from aiogram import Router, types
@@ -10,10 +11,12 @@ from database import (
     get_group_by_url,
     get_user,
     session,
+    get_user_by_username,
 )
-from keyboards import language_keyboard
+from keyboards import language_keyboard, orders_keyboard
 from locales import get_user_language
 from messages import send_groups_message, send_help
+from bot import bot
 
 handlers = Router()
 
@@ -48,7 +51,7 @@ async def profile(message: types.Message):
         language.format_value(
             "profile",
             {
-                "name": user.name,
+                "name": user.username,
                 "id": user.id,
                 "orders_amount": user.orders_amount(session),
                 "orders_sum": user.orders_sum(session),
@@ -59,6 +62,9 @@ async def profile(message: types.Message):
 
 @handlers.message(Command("groups"))
 async def groups(message: types.Message):
+    if not get_user_language(message.from_user.id):
+        return await start(message)
+
     await send_groups_message(message)
 
 
@@ -73,6 +79,8 @@ async def add_group(message: types.Message):
         )
         return
 
+    language = get_user_language(message.from_user.id, admin=True)
+
     url, price = message.text.split(" ")[-2:]
     info = get_group_info(url)
     create_group(info, price)
@@ -80,5 +88,66 @@ async def add_group(message: types.Message):
     group = get_group_by_url(info.url)
     await message.answer_photo(
         types.URLInputFile(group.image),
-        caption=str(group),
+        caption="Added group:\n\n"
+        + language(
+            "group_info",
+            {
+                "link": f"https://steamcommunity.com/groups/{group.url}",
+                "name": group.name,
+                "tag": group.tag,
+                "url": group.url,
+                "founded": group.founded,
+            },
+        ),
+    )
+
+
+@handlers.message(Command("add_groups"))
+async def add_groups(message: types.Message):
+    file_id = message.document.file_id
+    file = await bot.get_file(file_id)
+    file_path = file.file_path
+    result: BytesIO = await bot.download_file(file_path)
+
+    lines = len(result.readlines())
+    for bline in result.readlines():
+        try:
+            line = bline.decode()
+            url, price = line.split(" ")
+            info = get_group_info(url)
+            create_group(info, price)
+        except:
+            print("Skipped line")
+
+    await message.reply(f"Loaded {lines} groups.")
+
+
+@handlers.message(Command("lookup"))
+async def lookup(message: types.Message):
+    if str(message.from_user.id) != os.getenv("ADMIN_ID"):
+        return
+
+    if len(message.text.split(" ")) != 2:
+        await message.reply("You need to provide username (@username)")
+        return
+
+    language = get_user_language(message.from_user.id, admin=True)
+
+    username = message.text.split(" ")[-1].removeprefix("@")
+    user = get_user_by_username(username)
+
+    if not user:
+        await message.answer("No user found with such username")
+
+    await message.answer(
+        language.format_value(
+            "profile",
+            {
+                "name": user.username,
+                "id": user.id,
+                "orders_amount": user.orders_amount(session),
+                "orders_sum": user.orders_sum(session),
+            },
+        ),
+        reply_markup=orders_keyboard(user.id),
     )

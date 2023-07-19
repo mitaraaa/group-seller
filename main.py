@@ -1,10 +1,14 @@
-import asyncio
 import os
+import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher
+from aiogram import Dispatcher
 from handlers import handlers
 from callbacks import callbacks
+from bot import bot
+
+from aiogram.types import BotCommandScopeChat
+from aiogram.types.bot_command import BotCommand
 
 
 async def main():
@@ -16,9 +20,56 @@ async def main():
     dp = Dispatcher()
     dp.include_router(handlers)
     dp.include_router(callbacks)
+    await bot.set_my_commands(
+        [
+            BotCommand(command="start", description="Start the bot"),
+            BotCommand(command="help", description="Show help message"),
+            BotCommand(command="language", description="Set language"),
+            BotCommand(
+                command="groups", description="View all groups available"
+            ),
+            BotCommand(command="profile", description="View your profile"),
+        ],
+        language_code="en",
+    )
+    await bot.set_my_commands(
+        [
+            BotCommand(command="start", description="Запустить бота"),
+            BotCommand(command="help", description="Показать инструкцию"),
+            BotCommand(command="language", description="Выбрать язык"),
+            BotCommand(
+                command="groups",
+                description="Просмотреть все доступные группы",
+            ),
+            BotCommand(command="profile", description="Просмотреть профиль"),
+        ],
+        language_code="ru",
+    )
+    await bot.set_my_commands(
+        [
+            BotCommand(command="start", description="Start the bot"),
+            BotCommand(command="help", description="Show help message"),
+            BotCommand(command="language", description="Set language"),
+            BotCommand(
+                command="groups", description="View all groups available"
+            ),
+            BotCommand(command="profile", description="View your profile"),
+            BotCommand(
+                command="add_group",
+                description="Add new group; Args: <steam_link> <price_usd>",
+            ),
+            BotCommand(
+                command="add_groups",
+                description="Add groups",
+            ),
+            BotCommand(
+                command="lookup",
+                description="Check user profile; Args: <username>",
+            ),
+        ],
+        scope=BotCommandScopeChat(chat_id=os.getenv("ADMIN_ID")),
+    )
 
-    bot = Bot(token=os.getenv("BOT_TOKEN", ""), parse_mode="HTML")
-    print("Started polling")
     await dp.start_polling(bot)
 
 

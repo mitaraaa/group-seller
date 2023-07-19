@@ -1,14 +1,16 @@
 from aiogram import Router, types
 from emoji import emojize
+from database import remove_order, get_group_by_id
 
 from keyboards import (
     BackAction,
     ContinueAction,
     GroupAction,
+    GroupViewAction,
     GroupsAction,
     LanguageAction,
 )
-from locales import set_user_language
+from locales import set_user_language, get_user_language
 from messages import (
     send_group_message,
     send_groups_message,
@@ -66,7 +68,30 @@ async def continue_to_groups(callback: types.CallbackQuery):
 
 
 @callbacks.callback_query(BackAction.filter())
-async def back(callback: types.CallbackQuery):
+async def back(callback: types.CallbackQuery, callback_data: BackAction):
     await callback.message.delete()
+    if callback_data.action == "remove_order":
+        remove_order(callback_data.order_id)
     await send_groups_message(callback)
     await callback.answer()
+
+
+@callbacks.callback_query(GroupViewAction.filter())
+async def view(callback: types.CallbackQuery, callback_data: GroupViewAction):
+    language = get_user_language(callback.from_user.id)
+    group = get_group_by_id(callback_data.group_id)
+
+    await callback.message.answer_photo(
+        types.URLInputFile(group.image),
+        caption=language.format_value(
+            "group_info",
+            {
+                "link": f"https://steamcommunity.com/groups/{group.url}",
+                "name": group.name,
+                "tag": group.tag,
+                "url": group.url,
+                "founded": group.founded,
+            },
+        )
+        + f"\n\n<code>{group.price} USD</code>",
+    )

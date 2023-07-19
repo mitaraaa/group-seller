@@ -1,15 +1,19 @@
 from asyncio import sleep
-from datetime import datetime, timedelta
+from datetime import timedelta, datetime
+import os
+from math import ceil
 from aiogram import types
 from api.exchange import convert, convert_many
-from api.payment import check_status, create_invoice
+from api.payment import Invoice, check_status, create_invoice
 from database import (
     get_group_by_id,
     get_all_groups,
     create_order,
     get_order,
     set_sold,
+    remove_order,
 )
+from database.models import Group, Order
 from keyboards import (
     GroupAction,
     continue_keyboard,
@@ -18,6 +22,7 @@ from keyboards import (
     order_keyboard,
 )
 from locales import get_user_language
+from bot import bot
 
 
 async def send_group_message(callback: types.CallbackQuery, group_id: int):
@@ -120,6 +125,21 @@ async def send_groups_message(
         )
 
 
+def calculate_time(order: Order):
+    until = order.date + timedelta(
+        hours=int(os.getenv("TZ_OFFSET")),
+        minutes=int(os.getenv("TIME_TO_PAY")),
+    )
+
+    now = datetime.utcnow() + timedelta(
+        hours=int(os.getenv("TZ_OFFSET")),
+    )
+
+    left = until - now
+
+    return until, left
+
+
 async def send_order_message(
     callback: types.CallbackQuery,
     callback_data: GroupAction,
@@ -135,14 +155,16 @@ async def send_order_message(
     group = get_group_by_id(callback_data.group_id)
     order = get_order(order_id)
 
-    datetime_until = order.date + timedelta(minutes=1)
-    time_until = datetime_until.time()
+    datetime_until, datetime_left = calculate_time(order)
 
-    print((datetime_until - datetime(1970, 1, 1)).total_seconds())
+    time_until = (
+        datetime_until.time().isoformat()[:5]
+        + f" ({int(os.getenv('TZ_OFFSET')):+d} UTC)"
+    )
+
     invoice = create_invoice(
         callback_data.method,
         callback_data.price,
-        str((datetime_until - datetime(1970, 1, 1)).total_seconds()),
     )
 
     await callback.message.edit_text(
@@ -155,46 +177,96 @@ async def send_order_message(
                 "payment_option": language.format_value(
                     f"payment_option_button_{callback_data.method.lower()}"
                 ),
-                "time_remaining": 15,
-                "time_until": f"{(time_until.hour + 3) % 24:02}"
-                ":"
-                f"{time_until.minute:02}",  # tz hack
+                "time_remaining": ceil(datetime_left.total_seconds() / 60),
+                "time_until": time_until,
             },
         ),
-        reply_markup=order_keyboard(
-            language, callback_data.group_id, invoice.pay_url
-        ),
+        reply_markup=order_keyboard(language, order.id, invoice.pay_url),
     )
-    await check_payment(callback, invoice.id, group.id, group.name, order_id)
+    await check_payment(callback, callback_data, invoice, group, order)
 
 
 async def check_payment(
     callback: types.CallbackQuery,
-    invoice_id: int,
-    group_id: int,
-    group_name: str,
-    order_id: int,
+    callback_data,
+    invoice: Invoice,
+    group: Group,
+    order: Order,
 ):
     language = get_user_language(callback.from_user.id)
 
-    while status := check_status(invoice_id) not in ["paid", "expired"]:
+    time_passed = 0
+    while ((status := check_status(invoice.id)) != "paid") and (
+        time_passed < int(os.getenv("TIME_TO_PAY")) * 60
+    ):
         await sleep(5)
+        time_passed += 5
+
+        group = get_group_by_id(group.id)
+        if group.sold:
+            status = "expired"
+            break
+
+        order = get_order(order.id)
+        if not order:
+            status = "expired"
+            break
+
+        if time_passed % 60 == 0:
+            datetime_until, datetime_left = calculate_time(order)
+
+            time_until = (
+                datetime_until.time().isoformat()[:5]
+                + f" ({int(os.getenv('TZ_OFFSET')):+d} UTC)"
+            )
+
+            await callback.message.edit_text(
+                language.format_value(
+                    "order",
+                    {
+                        "name": group.name,
+                        "price": f"{callback_data.price} {callback_data.method}",
+                        "order_id": order.id,
+                        "payment_option": language.format_value(
+                            f"payment_option_button_{callback_data.method.lower()}"
+                        ),
+                        "time_remaining": ceil(
+                            datetime_left.total_seconds() / 60
+                        ),
+                        "time_until": time_until,
+                    },
+                ),
+                reply_markup=order_keyboard(
+                    language, order.id, invoice.pay_url
+                ),
+            )
 
     if status == "paid":
-        set_sold(group_id)
+        set_sold(group.id)
         await callback.message.edit_text(
             language.format_value(
                 "order_success",
                 {
-                    "name": group_name,
-                    "order_id": order_id,
+                    "name": group.name,
+                    "order_id": order.id,
                 },
             ),
         )
+        await bot.send_message(
+            os.getenv("CHANNEL_ID"),
+            language.format_value(
+                "channel_sold",
+                {
+                    "link": f"https://steamcommunity.com/groups/{group.url}",
+                    "name": group.name,
+                },
+            ),
+            disable_web_page_preview=True,
+        )
         await callback.answer()
-
-    if status == "expired":
+    else:
+        remove_order(order.id)
+        await callback.answer()
         await callback.message.edit_text(
             language.format_value("order_expired")
         )
-        await callback.answer()

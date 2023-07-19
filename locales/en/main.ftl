@@ -21,7 +21,7 @@ profile =
     Name: <code>{ $name }</code>
     User ID: <code>{ NUMBER($id, useGrouping: 0) }</code>
     Orders amount: <code>{ $orders_amount }</code>
-    Orders total: <code>{ $orders_sum }</code>
+    Orders total: <code>{ $orders_sum } USD</code>
 choosing_group = Choose a group:
 empty_list_of_group = There are currently no groups for sale.
 group_info = 
@@ -52,7 +52,7 @@ order =
     ➖➖➖➖➖➖➖➖➖➖➖➖
     For payment follow the link
     ⏰ Time remaining: <code>{ $time_remaining } minutes</code>
-    🕜 Deadline: <code>{ $time_until }</code> (+3 UTC)
+    🕜 Deadline: <code>{ $time_until }</code>
     ➖➖➖➖➖➖➖➖➖➖➖➖
 proceed_button = Proceed to checkout
 order_success = 
@@ -64,3 +64,4 @@ order_success =
     📦 Order: <code>#{ $order_id }</code>
     ➖➖➖➖➖➖➖➖➖➖➖➖
 order_expired = ❌ You did not pay for the order within the specified time.
+channel_sold = Group "<a href="{ $link }">{ $name }</a>" was sold!

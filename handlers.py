@@ -3,6 +3,7 @@ import os
 
 from aiogram import Router, types
 from aiogram.filters.command import Command
+from aiogram.utils.chat_action import ChatActionSender
 
 from api.steam import get_group_info
 from database import (
@@ -108,18 +109,21 @@ async def add_groups(message: types.Message):
     file = await bot.get_file(file_id)
     file_path = file.file_path
     result: BytesIO = await bot.download_file(file_path)
+    async with ChatActionSender.upload_document(
+        bot=bot, chat_id=message.chat.id
+    ):
+        count = 0
+        for bline in result.readlines():
+            try:
+                line = bline.decode()
+                url, price = line.split(" ")
+                info = get_group_info(url)
+                create_group(info, price)
+                count += 1
+            except:
+                print("Skipped line")
 
-    lines = len(result.readlines())
-    for bline in result.readlines():
-        try:
-            line = bline.decode()
-            url, price = line.split(" ")
-            info = get_group_info(url)
-            create_group(info, price)
-        except:
-            print("Skipped line")
-
-    await message.reply(f"Loaded {lines} groups.")
+        await message.reply(f"Loaded {count} groups.")
 
 
 @handlers.message(Command("lookup"))

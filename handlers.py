@@ -13,8 +13,10 @@ from database import (
     get_user,
     session,
     get_user_by_username,
+    get_all_groups,
 )
-from keyboards import language_keyboard, orders_keyboard
+
+from keyboards import groups_keyboard, language_keyboard, orders_keyboard
 from locales import get_user_language
 from messages import send_groups_message, send_help
 from bot import bot
@@ -101,6 +103,22 @@ async def add_group(message: types.Message):
             },
         ),
     )
+
+
+@handlers.message(Command("remove_group"))
+async def remove_group(message: types.Message):
+    if str(message.from_user.id) != os.getenv("ADMIN_ID"):
+        return
+
+    language = get_user_language(message.from_user.id, admin=True)
+    keyboard = groups_keyboard(get_all_groups(), remove=True)
+    if len(keyboard.inline_keyboard) == 0:
+        await message.answer(text=language.format_value("empty_list_of_group"))
+    else:
+        await message.answer(
+            text=language.format_value("select_to_remove"),
+            reply_markup=(keyboard),
+        )
 
 
 @handlers.message(Command("add_groups"))

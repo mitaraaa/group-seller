@@ -65,3 +65,5 @@ order_success =
     ➖➖➖➖➖➖➖➖➖➖➖➖
 order_expired = ❌ You did not pay for the order within the specified time.
 channel_sold = Group "<a href="{ $link }">{ $name }</a>" was sold!
+removed_group = Removed group from view.
+select_to_remove = Select group to remove:

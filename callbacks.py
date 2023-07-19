@@ -1,11 +1,12 @@
 from aiogram import Router, types
 from emoji import emojize
-from database import remove_order, get_group_by_id
+from database import remove_order, get_group_by_id, remove_group
 
 from keyboards import (
     BackAction,
     ContinueAction,
     GroupAction,
+    GroupRemoveAction,
     GroupViewAction,
     GroupsAction,
     LanguageAction,
@@ -94,4 +95,17 @@ async def view(callback: types.CallbackQuery, callback_data: GroupViewAction):
             },
         )
         + f"\n\n<code>{group.price} USD</code>",
+    )
+
+
+@callbacks.callback_query(GroupRemoveAction.filter())
+async def remove(
+    callback: types.CallbackQuery, callback_data: GroupRemoveAction
+):
+    language = get_user_language(callback.from_user.id, admin=True)
+    remove_group(callback_data.group_id)
+
+    await callback.answer()
+    await callback.message.edit_text(
+        language.format_value("removed_group"), reply_markup=None
     )

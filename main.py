@@ -59,6 +59,10 @@ async def main():
                 description="Add new group; Args: <steam_link> <price_usd>",
             ),
             BotCommand(
+                command="remove_group",
+                description="Remove group from view",
+            ),
+            BotCommand(
                 command="add_groups",
                 description="Add groups",
             ),

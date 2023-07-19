@@ -51,6 +51,15 @@ def get_all_groups():
         return session.scalars(stmt).all()
 
 
+def remove_group(group_id: int):
+    group = get_group_by_id(group_id)
+
+    with session:
+        session.flush()
+        session.delete(group)
+        session.commit()
+
+
 def set_sold(group_id: int):
     group = get_group_by_id(group_id)
 

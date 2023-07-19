@@ -24,6 +24,10 @@ class GroupsAction(CallbackData, prefix="select_group"):
     group_id: int
 
 
+class GroupRemoveAction(CallbackData, prefix="remove_group"):
+    group_id: int
+
+
 class GroupViewAction(CallbackData, prefix="view_group"):
     group_id: int
 
@@ -71,14 +75,16 @@ def continue_keyboard(language: FluentLocalization):
     return builder.as_markup()
 
 
-def groups_keyboard(groups: list[Group]):
+def groups_keyboard(groups: list[Group], remove: bool = False):
     builder = InlineKeyboardBuilder()
     buttons = []
+
+    action = GroupRemoveAction if remove else GroupsAction
     for group in groups:
         buttons.append(
             InlineKeyboardButton(
                 text=str(group.name),
-                callback_data=GroupsAction(group_id=group.id).pack(),
+                callback_data=action(group_id=group.id).pack(),
             )
         )
     builder.row(*buttons, width=1)

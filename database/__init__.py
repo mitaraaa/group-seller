@@ -12,6 +12,7 @@ from .db import (
     remove_order,
     get_user_by_username,
     get_user_orders,
+    remove_group,
 )
 
 __all__ = [
@@ -29,4 +30,5 @@ __all__ = [
     "remove_order",
     "get_user_by_username",
     "get_user_orders",
+    "remove_group",
 ]

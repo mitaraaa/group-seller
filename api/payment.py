@@ -15,7 +15,7 @@ class Invoice:
 
 
 def check_status(invoice_id: int) -> str:
-    url = "https://testnet-pay.crypt.bot/api/getInvoices"
+    url = "https://pay.crypt.bot/api/getInvoices"
 
     response = requests.get(
         url, headers=headers, data={"invoice_id": invoice_id}
@@ -26,7 +26,7 @@ def check_status(invoice_id: int) -> str:
 
 
 def create_invoice(asset: str, amount: float) -> Invoice:
-    url = "https://testnet-pay.crypt.bot/api/createInvoice"
+    url = "https://pay.crypt.bot/api/createInvoice"
 
     response = requests.post(
         url,
